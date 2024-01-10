@@ -19,10 +19,27 @@ def take_screenshot():
 def extract_text_from_image(image: Image, languages: list[str]):
 
     reader = easyocr.Reader(languages)
-    
+
     try:
         # Use pytesseract to do OCR on the image
         text = reader.readtext(image)
+
+        return text
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+    
+def extract_text_from_image_path(image_path: str, languages: list[str]):
+    
+    reader = easyocr.Reader(languages)
+    
+    try:
+        # Open the image file
+        image = Image.open(image_path)
+
+        # Use pytesseract to do OCR on the image
+        text = extract_text_from_image(image=image,languages=languages)
 
         return text
 
