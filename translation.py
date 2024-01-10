@@ -1,4 +1,11 @@
 from translate import Translator
+import json
+
+unicode_ranges: dict = {}
+
+# Read the JSON file
+with open('unicode_ranges.json', 'r') as file:
+    unicode_ranges = json.load(file)
 
 # Translate with the local python "translate" library
 def translate_text_pytranslate(text, source_language='ja',target_language='en'):
