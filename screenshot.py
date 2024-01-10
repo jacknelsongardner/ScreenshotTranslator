@@ -11,9 +11,10 @@ def take_screenshot():
     # Specify the filename with the timestamp
     filename = f"screenshot_{timestamp}.png"
     image: Image = pyautogui.screenshot(filename)
-    image.save(filename, format='PNG')
-    # Take a screenshot and save it with the specified filename
-    return filename
+    #image.save(filename, format='PNG')
+
+    # Return image object
+    return image
 
 # Extracts text from a image object using easyOCR
 def extract_text_from_image(image: Image, languages: list[str]):
