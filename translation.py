@@ -39,9 +39,11 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     chatprompt = '''
     Translate the following text. Translated text should be inside of {} brackets, 
     eg: Input: hello! Output: hola!
+    If there's any text not in the source language, just ignore it
+    If there's no text in the target language, just return {NULL} with the brackets
     '''
 
-    userprompt = f"translate from f{source_language} to f{target_language}: {text_to_translate}"
+    userprompt = f"translate from f{source_language} to f{target_language}: {text_to_translate} \n if any text is english"
 
     past_messages = [
         {"role": "system", "content": chatprompt},
@@ -56,9 +58,9 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     )
 
     chat_output = completion.choices[0].message.content
-    parse_chat_output = parse_brackets(chat_output)
+    parsed_chat_output = parse_brackets(chat_output)
 
-    return chat_output
+    return parsed_chat_output
 
 # Translate text using local "translate" library
 def translate_text_pytranslate(text, source_language='ja',target_language='en'):
