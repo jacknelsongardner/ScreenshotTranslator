@@ -8,7 +8,7 @@ import re
 unicode_ranges: dict = {}
 
 # Read the JSON file
-with open('unicode_ranges.json', 'r') as file:
+with open('unicodeRanges.json', 'r') as file:
     unicode_ranges = json.load(file)
 
 # Load environment variables from .env
@@ -23,7 +23,7 @@ base_folder = os.getcwd()
 work_folder = os.path.join(base_folder,"WORK")
 
 # Translate text using chatGPT api
-def translate_text_chat(userprompt: str):
+def translate_text_chat(text_to_translate: str, source_language: str, target_language: str):
     def parse_brackets(response_string):
         # Define a regular expression pattern to match substrings inside curly braces
         pattern = r'\{([^}]+)\}'
@@ -41,14 +41,14 @@ def translate_text_chat(userprompt: str):
     eg: Input: hello! Output: hola!
     '''
 
+    userprompt = f"translate from f{source_language} to f{target_language}: {text_to_translate}"
+
     past_messages = [
         {"role": "system", "content": chatprompt},
         {"role": "user", "content": "Translate to english: hola!"},
         {"role": "assistant", "content": '{hello!}'},
         {"role": "user", "content": userprompt},
     ]
-    
-    asking = True
 
     completion = chatclient.chat.completions.create(
     model="gpt-3.5-turbo",
