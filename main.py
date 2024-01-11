@@ -3,12 +3,14 @@ from screenshot import *
 from translation import *
 from PIL import Image
 import pygetwindow as gw
-
 import multiprocessing
-
 import tkinter as tk
-
 from pynput import keyboard
+from screeninfo import get_monitors
+
+# Screen width and height 
+SCREEN_WIDTH = 0 #get_monitors()[0].width
+SCREEN_HEIGHT = 0 #get_monitors()[0].height
 
 # When this button is pressed, a screenshot will be taken and translated
 SCREENSHOT_KEY = keyboard.Key.esc
@@ -32,10 +34,17 @@ TXT_CONFIDENCE = 2
 TRANS_LOCATION = 0
 TRANS_CONTENT = 1
 
+# Setting up base files
+example_screenshot: Image = take_screenshot()
+example_screenshot.save(SHOT_LOCATION)
+
+# Real screen size
+REAL_SCREEN_WIDTH = example_screenshot.width
+REAL_SCREEN_HEIGHT = example_screenshot.height
+
+
 def perform_translation():
     chat_translated_text_list = []
-    python_translated_text_list = []
-    google_translated_text = []
 
     extracted_text = []
 
@@ -54,7 +63,7 @@ def perform_translation():
     for text_tuple in extracted_text:
 
         translated_content = translate_text_chat(text_tuple[TXT_CONTENT], 'hawaiin', 'english')
-        chat_translated_text_list.append(( text_tuple[TXT_CONTENT], translated_content))
+        chat_translated_text_list.append(( text_tuple[TXT_LOCATION], translated_content))
 
     print("\nTranslated Text: ")
     print(chat_translated_text_list)
@@ -69,21 +78,40 @@ def make_popup(text_content, text_location, popup_root):
         X = 0
         Y = 1
 
-        top_left: list = text_corner_coordinates[0]
-        top_right: list = text_corner_coordinates[1]
-        bottom_right: list = text_corner_coordinates[2]
-        bottom_left: list = text_corner_coordinates[3]
+        # Convert pixel coordinates to tkinter coordinates
+        def convert_pixel_to_tk_coordinates(pixel_coordinates: int):
+        
+            pixel_width_ratio: float = pixel_coordinates[X] / REAL_SCREEN_WIDTH 
+            pixel_height_ratio: float = pixel_coordinates[Y] / REAL_SCREEN_HEIGHT
 
-        popup_width = top_right[X] - top_left[X]
-        popup_height = top_left[Y] - bottom_left[Y]
+            tk_screen_width: int = root.winfo_screenwidth()
+            tk_screen_height: int = root.winfo_screenheight()
 
-        popup_x = top_left[X]
-        popup_y = top_left[Y]
+            tk_x = int(pixel_width_ratio * tk_screen_width)
+            tk_y = int(pixel_height_ratio * tk_screen_height)
+
+            tk_coordinates = (tk_x,tk_y)
+
+            return tk_coordinates
+
+        bottom_left: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[0])
+        bottom_right: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[1])
+        top_right: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[2])
+        top_left: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[3])
+
+        popup_width = int(top_right[X]) - int(top_left[X])
+        popup_height = int(top_left[Y]) - int(bottom_left[Y])
+
+        popup_x = int(top_left[X]) 
+        popup_y = int(top_left[Y])
 
         tk_coordinates = f"{popup_width}x{popup_height}+{popup_x}+{popup_y}"
         return tk_coordinates
 
-    popup.geometry(calculate_popup_geometry(text_location))
+    popup_geo = calculate_popup_geometry(text_location)
+    print(popup_geo)
+
+    popup.geometry(popup_geo)
 
     # Set initial transparency (0.5 for semi-transparency)
     def set_transparency(window, alpha):
@@ -130,7 +158,7 @@ def make_root():
     
     return root
 
-def on_key_pressed(key, popups_onscreen, popups):
+def on_key_pressed(key, make_popups: bool, popups: list):
     print("key was pressed")
     try:
         # Making sure key pressed was the SCREENSHOT_KEY
@@ -138,29 +166,31 @@ def on_key_pressed(key, popups_onscreen, popups):
             print("screenshot key was pressed")
 
             # If popups HAVE NOT been made, perform translation and create popups
-            if popups_onscreen == False: 
-                popups_onscreen = True
+            if make_popups == True: 
+                print("making popups")
+                
 
                 # Take screenshot, translate, etc...
                 translated_tuples = perform_translation()
 
                 # Cycling through translated_tuples and making popups for each one
                 for trans_tuple in translated_tuples:
-                    new_popup = make_popup(trans_tuple[TRANS_CONTENT], 
-                                trans_tuple[TRANS_LOCATION], 
-                                root)
+                    new_popup = make_popup( trans_tuple[TRANS_CONTENT], 
+                                            trans_tuple[TRANS_LOCATION], 
+                                            root)
                     
                     popups.append(new_popup)  
 
-                return popups_onscreen      
+                return make_popups      
 
             # If popups HAVE been made, delete previously created popups
-            elif popups_onscreen == True:
-                popups_onscreen = False  
-
+            elif make_popups == False:
+                print("deleting popups")
+                print(popups)
+                  
                 # Destroy all popups
-                for popup in popups:
-                    popup.destroy()
+                for pop in popups:
+                    pop.destroy()
 
                 popups.clear()
 
@@ -176,12 +206,15 @@ if __name__ == "__main__":
     popups: list = []   
 
     # Whether the screenshot key has already been pressed and acted upon
-    popups_onscreen = False
+    make_popups = False
 
     # Function to allow access to local variables when a key is pressed
     def pass_pressed(key):
-        global popups, popups_onscreen
-        popups = on_key_pressed(key=key, popups_onscreen=popups_onscreen, popups=popups)
+        # Importing popups and reversing popups on screen
+        global popups, make_popups 
+        make_popups = not make_popups
+
+        popups = on_key_pressed(key=key, make_popups=make_popups, popups=popups)
 
     # Creating listener to listen for keyboard input
     listener = keyboard.Listener(on_press=pass_pressed)
