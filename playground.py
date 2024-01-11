@@ -1,30 +1,26 @@
 import tkinter as tk
-import keyboard
 
-def show_popup():
-    print("made popup")
-    popup = tk.Toplevel(root)
-    popup.overrideredirect(True)  # Remove window decorations
-    popup.attributes('-topmost', True)  # Keep the window on top
-    popup.geometry("200x100")
-    
-    # Remove the title bar
-    root.overrideredirect(True)
+def set_transparency(window, alpha):
+    window.attributes("-alpha", alpha)
 
-    # Bind the key press event to the function that closes the popup
-    #popup.bind("<KeyPress>", lambda event: popup.destroy())
+def main():
+    root = tk.Tk()
+    root.title("Translucent Window")
 
-# Main Tkinter window
-root = tk.Tk()
-root.title("Main Window")
+    # Set initial transparency (0.5 for semi-transparency)
+    set_transparency(root, 0.5)
 
-# Button to show the popup
-popup_button = tk.Button(root, text="Show Popup", command=show_popup)
-popup_button.pack(pady=20)
+    # Create a label inside the window
+    label = tk.Label(root, text="Translucent Window")
+    label.pack(padx=20, pady=20)
 
-root.mainloop()
+    # Create a slider to control transparency
+    transparency_slider = tk.Scale(root, from_=0.1, to=1.0, resolution=0.1, orient=tk.HORIZONTAL,
+                                   label="Transparency", command=lambda value: set_transparency(root, float(value)))
+    transparency_slider.set(0.5)  # Set initial value
+    transparency_slider.pack(pady=10)
 
+    root.mainloop()
 
-
-
-
+if __name__ == "__main__":
+    main()
