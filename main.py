@@ -9,8 +9,8 @@ from pynput import keyboard
 from screeninfo import get_monitors
 
 # Screen width and height 
-SCREEN_WIDTH = 0 #get_monitors()[0].width
-SCREEN_HEIGHT = 0 #get_monitors()[0].height
+SCREEN_WIDTH = 0 
+SCREEN_HEIGHT = 0 
 
 # When this button is pressed, a screenshot will be taken and translated
 SCREENSHOT_KEY = keyboard.Key.esc
@@ -62,7 +62,7 @@ def perform_translation():
     print("\n\nTranslating Text from Screenshot with openAI api")
     for text_tuple in extracted_text:
 
-        translated_content = translate_text_chat(text_tuple[TXT_CONTENT], 'hawaiin', 'english')
+        translated_content = translate_text_pytranslate(text_tuple[TXT_CONTENT], 'haw', 'en')
         chat_translated_text_list.append(( text_tuple[TXT_LOCATION], translated_content))
 
     print("\nTranslated Text: ")
@@ -124,15 +124,12 @@ def make_popup(text_content, text_location, popup_root):
     label.pack(padx=20, pady=20)
 
     # Binding <KeyPress> event to on_key_press method
-    def on_key_press(event):
-        # Check if the pressed key is the 'Screenshot key'
-        if event.keysym == SCREENSHOT_KEY:
-            # Destroy self
-            popup.destroy()
+    def kill_self(event):
+        popup.after(1, lambda: popup.destroy())
 
-    popup.bind("<KeyPress>", on_key_press)  
+    popup.bind("<KeyPress>", destroy_popup)  
 
-def make_root():
+def make_popup_root():
     root = tk.Tk()
     root.title("Screenshot Translator")
     root.geometry("300x200+100+400")
@@ -155,72 +152,78 @@ def make_root():
     # Bind the key press event to the function
     root.bind_all("<KeyPress>", on_key_press)
     '''
-    
+    # Binding <KeyPress> event to on_key_press method
+    def kill_self_and_children(event):
+        # Check if the pressed key is the 'Screenshot key'
+        if event.keysym == SCREENSHOT_KEY:
+            # Destroy self
+            root.destroy()
+
+    root.bind("<KeyPress>", kill_self_and_children)  
+
     return root
 
-def on_key_pressed(key, make_popups: bool, popups: list):
-    print("key was pressed")
-    try:
-        # Making sure key pressed was the SCREENSHOT_KEY
-        if key == SCREENSHOT_KEY:
-            print("screenshot key was pressed")
+def make_main_root():
+    root = tk.Tk()
+    root.title("Screenshot Translator")
+    root.geometry("300x200+100+400")
 
-            # If popups HAVE NOT been made, perform translation and create popups
-            if make_popups == True: 
-                print("making popups")
-                
+    '''
+    # Binding <KeyPress> event to on_key_press method
+    def on_key_press(event):
+        # Check if the pressed key is the 'Screenshot key'
+        if event.keysym == SCREENSHOT_KEY:
+            # Take screenshot, translate, etc...
+            translated_tuples = perform_translation()
 
-                # Take screenshot, translate, etc...
-                translated_tuples = perform_translation()
+            # Cycling through translated_tuples and making popups for each one
+            for trans_tuple in translated_tuples:
+                make_popup(trans_tuple[TRANS_CONTENT], 
+                           trans_tuple[TRANS_LOCATION], 
+                           root)
+    
 
-                # Cycling through translated_tuples and making popups for each one
-                for trans_tuple in translated_tuples:
-                    new_popup = make_popup( trans_tuple[TRANS_CONTENT], 
-                                            trans_tuple[TRANS_LOCATION], 
-                                            root)
-                    
-                    popups.append(new_popup)  
+    # Bind the key press event to the function
+    root.bind_all("<KeyPress>", on_key_press)
+    ''' 
 
-                return make_popups      
+    return root
 
-            # If popups HAVE been made, delete previously created popups
-            elif make_popups == False:
-                print("deleting popups")
-                print(popups)
-                  
-                # Destroy all popups
-                for pop in popups:
-                    pop.destroy()
+def create_popups(popups_root):
+    
+    print("Creating popups")
 
-                popups.clear()
+    # Take screenshot, translate, etc...
+    translated_tuples = perform_translation()
 
-                return popups
-            
-            return popups
-        
-    except AttributeError:
-        print(f"{RED}Attribute error : key does not exist")
+    # Cycling through translated_tuples and making popups for each one
+    for trans_tuple in translated_tuples:
+        make_popup( trans_tuple[TRANS_CONTENT], 
+                    trans_tuple[TRANS_LOCATION], 
+                    popups_root)
+
+def destroy_popup(event):
+    event.widget.destroy()
 
 if __name__ == "__main__":
-    # List for storing popups on screen
-    popups: list = []   
 
-    # Whether the screenshot key has already been pressed and acted upon
-    make_popups = False
+    # Creating root window for user options, etc
+    root = make_main_root()
 
     # Function to allow access to local variables when a key is pressed
-    def pass_pressed(key):
-        # Importing popups and reversing popups on screen
-        global popups, make_popups 
-        make_popups = not make_popups
+    def on_key_press(key):
+        try: 
+            # If key pressed was screenshot key
+            if key == SCREENSHOT_KEY:
+                # Spawn popups
+                create_popups(popups_root=root)
 
-        popups = on_key_pressed(key=key, make_popups=make_popups, popups=popups)
+        except AttributeError:
+            print(f"{RED}Attribute error : key does not exist")
 
     # Creating listener to listen for keyboard input
-    listener = keyboard.Listener(on_press=pass_pressed)
+    listener = keyboard.Listener(on_press=on_key_press)
     listener.start()
 
-    # Creating root for all popups to belong to
-    root = make_root()
     root.mainloop()
     
