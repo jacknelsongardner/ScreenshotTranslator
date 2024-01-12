@@ -125,9 +125,10 @@ def make_popup(text_content, text_location, popup_root):
 
     # Binding <KeyPress> event to on_key_press method
     def kill_self(event):
-        popup.after(1, lambda: popup.destroy())
+        popup.after(1, lambda: popup_root.destroy())
 
-    popup.bind("<KeyPress>", destroy_popup)  
+    root.focus_set()
+    #popup.bind("<KeyPress>", kill_self)  
 
 def make_popup_root():
     root = tk.Tk()
@@ -153,13 +154,13 @@ def make_popup_root():
     root.bind_all("<KeyPress>", on_key_press)
     '''
     # Binding <KeyPress> event to on_key_press method
-    def kill_self_and_children(event):
+    def kill_children(event):
         # Check if the pressed key is the 'Screenshot key'
         if event.keysym == SCREENSHOT_KEY:
             # Destroy self
             root.destroy()
 
-    root.bind("<KeyPress>", kill_self_and_children)  
+    root.bind("<KeyPress>", kill_children)  
 
     return root
 
@@ -186,6 +187,19 @@ def make_main_root():
     # Bind the key press event to the function
     root.bind_all("<KeyPress>", on_key_press)
     ''' 
+    # Binding <KeyPress> event to on_key_press method
+    def key_pressed(event):
+        print("key pressed")
+        root.after(1, kill_children())
+
+    def kill_children():
+        print("destroying")
+        # Destroy self
+        for widget in root.winfo_children():
+            widget.destroy()
+
+
+    root.bind("<KeyPress>", key_pressed)  
 
     return root
 
@@ -201,9 +215,6 @@ def create_popups(popups_root):
         make_popup( trans_tuple[TRANS_CONTENT], 
                     trans_tuple[TRANS_LOCATION], 
                     popups_root)
-
-def destroy_popup(event):
-    event.widget.destroy()
 
 if __name__ == "__main__":
 
