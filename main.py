@@ -124,11 +124,28 @@ def make_popup(text_content, text_location, popup_root):
     label.pack(padx=20, pady=20)
 
     # Binding <KeyPress> event to on_key_press method
-    def kill_self(event):
-        popup.after(1, lambda: popup_root.destroy())
+    #def kill_self(event):
+       #popup.after(1, lambda: popup_root.destroy())
 
-    root.focus_set()
-    #popup.bind("<KeyPress>", kill_self)  
+    # Bringing tkinter windows to front of page
+    popup_root.attributes('-topmost', 1)
+    popup_root.attributes('-topmost', 0)
+
+    # Setting focus to the root
+    popup_root.focus_set()
+
+    # Binding <KeyPress> event to on_key_press method
+    # Binding <KeyPress> event to on_key_press method
+    def key_pressed(event):
+        print("key pressed")
+        root.after(1, kill_children())
+
+    def kill_children():
+        print("destroying")
+        # Destroy self
+        for widget in popup_root.winfo_children():
+            widget.destroy()
+    popup.bind("<KeyPress>", key_pressed)  
 
 def make_popup_root():
     root = tk.Tk()
