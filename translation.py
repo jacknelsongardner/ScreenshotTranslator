@@ -5,12 +5,6 @@ from dotenv import load_dotenv
 import os
 import re
 
-unicode_ranges: dict = {}
-
-# Read the JSON file
-with open('unicodeRanges.json', 'r') as file:
-    unicode_ranges = json.load(file)
-
 # Load environment variables from .env
 load_dotenv()
 
