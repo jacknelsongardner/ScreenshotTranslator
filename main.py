@@ -8,10 +8,6 @@ import tkinter as tk
 from pynput import keyboard
 from screeninfo import get_monitors
 
-# Screen width and height 
-SCREEN_WIDTH = 0 
-SCREEN_HEIGHT = 0 
-
 # When this button is pressed, a screenshot will be taken and translated
 SCREENSHOT_KEY = keyboard.Key.esc
 
@@ -42,6 +38,11 @@ example_screenshot.save(SHOT_LOCATION)
 REAL_SCREEN_WIDTH = example_screenshot.width
 REAL_SCREEN_HEIGHT = example_screenshot.height
 
+# Variables for width, height, x, and y correction
+POPUP_WIDTH_CORRECTION = 15
+POPUP_HEIGHT_CORRECTION = 15
+POPUP_X_CORRECTION = 0
+POPUP_Y_CORRECTION = -60
 
 def perform_translation():
     chat_translated_text_list = []
@@ -87,8 +88,8 @@ def make_popup(text_content, text_location, popup_root):
             tk_screen_width: int = root.winfo_screenwidth()
             tk_screen_height: int = root.winfo_screenheight()
 
-            tk_x = int(pixel_width_ratio * tk_screen_width)
-            tk_y = int(pixel_height_ratio * tk_screen_height)
+            tk_x = int(pixel_width_ratio * tk_screen_width) + POPUP_X_CORRECTION
+            tk_y = int(pixel_height_ratio * tk_screen_height) + POPUP_Y_CORRECTION
 
             tk_coordinates = (tk_x,tk_y)
 
@@ -99,10 +100,10 @@ def make_popup(text_content, text_location, popup_root):
         top_right: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[2])
         top_left: list = convert_pixel_to_tk_coordinates(text_corner_coordinates[3])
 
-        popup_width = int(top_right[X]) - int(top_left[X])
-        popup_height = int(top_left[Y]) - int(bottom_left[Y])
+        popup_width = int(top_right[X]) - int(top_left[X]) + POPUP_WIDTH_CORRECTION
+        popup_height = int(top_left[Y]) - int(bottom_left[Y]) + POPUP_HEIGHT_CORRECTION
 
-        popup_x = int(top_left[X]) 
+        popup_x = int(top_left[X])
         popup_y = int(top_left[Y])
 
         tk_coordinates = f"{popup_width}x{popup_height}+{popup_x}+{popup_y}"
@@ -122,10 +123,6 @@ def make_popup(text_content, text_location, popup_root):
     # Create a label inside the window
     label = tk.Label(popup, text=f"{text_content}")
     label.pack(padx=20, pady=20)
-
-    # Binding <KeyPress> event to on_key_press method
-    #def kill_self(event):
-       #popup.after(1, lambda: popup_root.destroy())
 
     # Bringing tkinter windows to front of page
     popup_root.attributes('-topmost', 1)
