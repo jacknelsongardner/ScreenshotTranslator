@@ -4,6 +4,7 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
+import langid 
 
 # Load environment variables from .env
 load_dotenv()
@@ -54,17 +55,22 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     chat_output = completion.choices[0].message.content
     parsed_chat_output = parse_brackets(chat_output)
 
-    return parsed_chat_output
+    if determine_lang(parsed_chat_output) == target_language:
+            return None
+    else:
+        return parsed_chat_output
 
 # Translate text using local "translate" library
 def translate_text_pytranslate(text, source_language='ja',target_language='en'):
     print("translating")
-    print(text)
     try:
-        print(text)
         translator = Translator(from_lang=source_language, to_lang=target_language)
         translation = translator.translate(text)
-        return translation
+        
+        if determine_lang(translation) == target_language:
+            return None
+        else:
+            return translation
 
     except Exception as e:
         print("error")
@@ -75,4 +81,10 @@ def translate_text_pytranslate(text, source_language='ja',target_language='en'):
 def translate_text_google(text):
     #TODO : implement google translate api
     pass
-   
+
+# Determine what language a piece of text is
+def determine_lang(text):
+    # Detect the language of the input text
+    lang, confidence = langid.classify(text)
+
+    return lang

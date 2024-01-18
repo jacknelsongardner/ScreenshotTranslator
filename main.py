@@ -229,9 +229,12 @@ def create_popups(popups_root):
 
     # Cycling through translated_tuples and making popups for each one
     for trans_tuple in translated_tuples:
-        make_popup( trans_tuple[TRANS_CONTENT], 
-                    trans_tuple[TRANS_LOCATION], 
-                    popups_root)
+
+        # Checking if content is null
+        if trans_tuple[TRANS_CONTENT] == None:
+            make_popup( trans_tuple[TRANS_CONTENT], 
+                        trans_tuple[TRANS_LOCATION], 
+                        popups_root)
 
 if __name__ == "__main__":
 
