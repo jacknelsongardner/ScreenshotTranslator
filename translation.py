@@ -28,6 +28,10 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     
         return matches
     
+    # If the inputted text is already in the target language, return NULL
+    if determine_lang(text_to_translate) == target_language:
+        return None
+
     # Create OpenAI client
     chatclient = openai.OpenAI(api_key=chat_key)
 
@@ -47,6 +51,7 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
         {"role": "user", "content": userprompt},
     ]
 
+    # Sending request
     completion = chatclient.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=past_messages
@@ -55,22 +60,19 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     chat_output = completion.choices[0].message.content
     parsed_chat_output = parse_brackets(chat_output)
 
-    if determine_lang(parsed_chat_output) == target_language:
-            return None
-    else:
-        return parsed_chat_output
+    return parsed_chat_output
 
 # Translate text using local "translate" library
 def translate_text_pytranslate(text, source_language='ja',target_language='en'):
-    print("translating")
+    # Checking to make sure text isn't already in the target language
+    if determine_lang(text) == target_language:
+        return None
+    
     try:
         translator = Translator(from_lang=source_language, to_lang=target_language)
         translation = translator.translate(text)
         
-        if determine_lang(translation) == target_language:
-            return None
-        else:
-            return translation
+        return translation
 
     except Exception as e:
         print("error")

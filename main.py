@@ -231,7 +231,7 @@ def create_popups(popups_root):
     for trans_tuple in translated_tuples:
 
         # Checking if content is null
-        if trans_tuple[TRANS_CONTENT] == None:
+        if trans_tuple[TRANS_CONTENT] != None:
             make_popup( trans_tuple[TRANS_CONTENT], 
                         trans_tuple[TRANS_LOCATION], 
                         popups_root)
