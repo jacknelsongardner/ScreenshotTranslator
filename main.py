@@ -142,31 +142,26 @@ def make_popup(text_content, text_location, popup_root):
         # Destroy self
         for widget in popup_root.winfo_children():
             widget.destroy()
+    
     popup.bind("<KeyPress>", key_pressed)  
 
 def make_main_root():
     root = tk.Tk()
     root.title("Screenshot Translator")
-    root.geometry("300x200+100+400")
-
-    '''
-    # Binding <KeyPress> event to on_key_press method
-    def on_key_press(event):
-        # Check if the pressed key is the 'Screenshot key'
-        if event.keysym == SCREENSHOT_KEY:
-            # Take screenshot, translate, etc...
-            translated_tuples = perform_translation()
-
-            # Cycling through translated_tuples and making popups for each one
-            for trans_tuple in translated_tuples:
-                make_popup(trans_tuple[TRANS_CONTENT], 
-                           trans_tuple[TRANS_LOCATION], 
-                           root)
+    root.geometry("380x220+50+200")
     
+    user_instructions = '''
+                        Press ESC to take a screenshot 
+                        and translate contents found
+                        
+                        Press any button afterwords 
+                        to make popups disappear
+                        ''' 
 
-    # Bind the key press event to the function
-    root.bind_all("<KeyPress>", on_key_press)
-    ''' 
+    # Create a label inside the window with user instructions
+    label = tk.Label(root, text=f"{user_instructions}")
+    label.pack(pady=20, anchor='w')
+
     # Binding <KeyPress> event to on_key_press method
     def key_pressed(event):
         print("key pressed")
