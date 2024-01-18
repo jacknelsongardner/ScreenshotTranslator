@@ -73,6 +73,7 @@ def perform_translation():
 
 def make_popup(text_content, text_location, popup_root):
     popup = tk.Toplevel(popup_root)
+    popup.winfo_name = "Popup"
 
     # Setting size of popup
     def calculate_popup_geometry(text_corner_coordinates: list):
@@ -141,7 +142,8 @@ def make_popup(text_content, text_location, popup_root):
         print("destroying")
         # Destroy self
         for widget in popup_root.winfo_children():
-            widget.destroy()
+            if widget.winfo_name == "Popup":
+                widget.destroy()
     
     popup.bind("<KeyPress>", key_pressed)  
 
@@ -164,14 +166,14 @@ def make_main_root():
 
     # Binding <KeyPress> event to on_key_press method
     def key_pressed(event):
-        print("key pressed")
+        # When key pressed, kill children
         root.after(1, kill_children())
 
     def kill_children():
-        print("destroying")
-        # Destroy self
+        # Destroy child windows 
         for widget in root.winfo_children():
-            widget.destroy()
+            if widget.winfo_name == "Popup":
+                widget.destroy()
 
 
     root.bind("<KeyPress>", key_pressed)  
