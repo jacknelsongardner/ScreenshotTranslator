@@ -18,7 +18,7 @@ base_folder = os.getcwd()
 work_folder = os.path.join(base_folder,"WORK")
 
 # Translate text using chatGPT api
-def translate_text_chat(text_to_translate: str, source_language: str, target_language: str):
+def translate_text_chat(text_to_translate: str, target_language: str):
     def parse_brackets(response_string):
         # Define a regular expression pattern to match substrings inside curly braces
         pattern = r'\{([^}]+)\}'
@@ -28,6 +28,13 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     
         return matches
     
+    # Obtaining language code of inputted text    
+    source_language = determine_lang(text_to_translate)
+
+    # Checking to make sure text isn't already in the target language
+    if source_language == target_language:
+        return None
+
     # If the inputted text is already in the target language, return NULL
     if determine_lang(text_to_translate) == target_language:
         return None
@@ -63,14 +70,18 @@ def translate_text_chat(text_to_translate: str, source_language: str, target_lan
     return parsed_chat_output
 
 # Translate text using local "translate" library
-def translate_text_pytranslate(text, source_language='ja',target_language='en'):
+def translate_text_pytranslate(text_to_translate, target_language='en'):
+
+    # Obtaining language code of inputted text    
+    source_language = determine_lang(text_to_translate)
+
     # Checking to make sure text isn't already in the target language
-    if determine_lang(text) == target_language:
+    if source_language == target_language:
         return None
     
     try:
         translator = Translator(from_lang=source_language, to_lang=target_language)
-        translation = translator.translate(text)
+        translation = translator.translate(text_to_translate)
         
         return translation
 

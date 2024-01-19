@@ -63,7 +63,7 @@ def perform_translation():
     print("\n\nTranslating Text from Screenshot with openAI api")
     for text_tuple in extracted_text:
 
-        translated_content = translate_text_pytranslate(text_tuple[TXT_CONTENT], 'haw', 'en')
+        translated_content = translate_text_pytranslate(text_tuple[TXT_CONTENT], 'en')
         chat_translated_text_list.append(( text_tuple[TXT_LOCATION], translated_content))
 
     print("\nTranslated Text: ")
